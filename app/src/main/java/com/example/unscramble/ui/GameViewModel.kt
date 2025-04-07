@@ -1,6 +1,5 @@
 package com.example.unscramble.ui
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -78,7 +77,6 @@ class GameViewModel : ViewModel() {
         }
 
         updateUserGuess("")
-        Log.d("GameViewModel", "isGameOver " + uiState.value.isGameOver)
     }
 
     private fun updateGameState(updatedScore: Int) {
