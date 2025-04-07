@@ -1,9 +1,12 @@
 package com.example.unscramble.ui
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.unscramble.data.MAX_NO_OF_WORDS
+import com.example.unscramble.data.SCORE_INCREASE
 import com.example.unscramble.data.allWords
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -63,11 +66,46 @@ class GameViewModel : ViewModel() {
     }
 
     fun checkUserGuess() {
-        if (!userGuess.equals(currentWord, ignoreCase = true)) {
+        if (userGuess.equals(currentWord, ignoreCase = true) && !uiState.value.isGameOver) {
+            val updatedScore = _uiState.value.score.plus(SCORE_INCREASE)
+            updateGameState(updatedScore)
+        } else {
             _uiState.update { currentState ->
-                currentState.copy(isGuessedWordWrong = true)
+                currentState.copy(
+                    isGuessedWordWrong = true,
+                )
             }
         }
+
+        updateUserGuess("")
+        Log.d("GameViewModel", "isGameOver " + uiState.value.isGameOver)
+    }
+
+    private fun updateGameState(updatedScore: Int) {
+        if (usedWords.size == MAX_NO_OF_WORDS) {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isGuessedWordWrong = false,
+                    score = updatedScore,
+                    isGameOver = true
+                )
+            }
+        }
+        else {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isGuessedWordWrong = false,
+                    currentScrambleWord = pickRandomWordAndShuffle(),
+                    currentWordCount = currentState.currentWordCount.inc(),
+                    score = updatedScore
+                )
+            }
+        }
+
+    }
+
+    fun skipWord() {
+        updateGameState(_uiState.value.score)
 
         updateUserGuess("")
     }
@@ -77,4 +115,7 @@ class GameViewModel : ViewModel() {
 data class GameUiState (
     val currentScrambleWord: String = "",
     val isGuessedWordWrong: Boolean = false,
+    val currentWordCount: Int = 1,
+    val score: Int = 0,
+    val isGameOver: Boolean = false
 )
